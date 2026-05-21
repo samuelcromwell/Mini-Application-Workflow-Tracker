@@ -17,8 +17,47 @@ frontend/   React application
 
 ## Setup
 
-Detailed setup instructions will be added as the backend and frontend are
-implemented.
+### Backend
+
+From the repository root:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r backend/requirements.txt
+cd backend
+python manage.py migrate
+python manage.py runserver
+```
+
+The backend API runs at `http://127.0.0.1:8000/api/`.
+
+### Frontend
+
+In a second terminal:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+The frontend runs at `http://localhost:5173/`.
+
+### Run Tests
+
+```bash
+source .venv/bin/activate
+cd backend
+python manage.py test applications
+```
+
+### Build Frontend
+
+```bash
+cd frontend
+npm run build
+```
 
 ## Assumptions
 
