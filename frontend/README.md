@@ -2,4 +2,13 @@
 
 React client for the application workflow tracker.
 
-Setup instructions will be added after the React project is scaffolded.
+## Setup
+
+From the `frontend` directory:
+
+```bash
+npm install
+npm run dev
+```
+
+The app will be available at `http://localhost:5173/`.
