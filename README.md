@@ -42,7 +42,9 @@ python manage.py runserver
 ```
 
 - API base: `http://127.0.0.1:8000/api/`
+- API root: `http://127.0.0.1:8000/api/`
 - Interactive API docs (Swagger UI): `http://127.0.0.1:8000/api/docs`
+- Live API docs (Swagger UI): `https://mini-application-workflow-tracker.onrender.com/api/docs`
 - Health check: `http://127.0.0.1:8000/api/health`
 
 ### Run migrations
@@ -90,6 +92,29 @@ different host. CORS is pre-allowed for ports 5173 and 5174.
 cd frontend
 npm run build
 npm run preview
+```
+
+### Deploy frontend on Netlify
+
+Create a new Netlify site from this repository and use:
+
+| Setting | Value |
+|---------|-------|
+| Base directory | leave empty |
+| Build command | `npm --prefix frontend run build` |
+| Publish directory | `frontend/dist` |
+
+Set this environment variable in Netlify:
+
+```text
+VITE_API_BASE_URL=https://mini-application-workflow-tracker.onrender.com/api
+```
+
+After Netlify deploys, add the Netlify site URL to the backend's
+`CORS_ALLOWED_ORIGINS` environment variable on Render, for example:
+
+```text
+https://your-netlify-site.netlify.app
 ```
 
 ## API Endpoints
