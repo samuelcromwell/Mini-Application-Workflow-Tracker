@@ -139,18 +139,15 @@ p {
   gap: 14px;
 }
 
-.brand-mark {
-  display: grid;
-  place-items: center;
+.brand-logo {
   width: 44px;
   height: 44px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, #1f3a8a, #4f46e5);
-  color: white;
-  font-weight: 800;
-  font-size: 0.95rem;
-  letter-spacing: 0.04em;
-  box-shadow: 0 8px 18px rgb(79 70 229 / 30%);
+  border-radius: 10px;
+  background: #ffffff;
+  padding: 4px;
+  object-fit: contain;
+  box-shadow: 0 8px 18px rgb(15 23 42 / 10%);
+  border: 1px solid var(--border);
 }
 
 .brand h1 {

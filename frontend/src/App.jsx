@@ -706,9 +706,11 @@ export default function App() {
     <div className="app-shell">
       <header className="topbar">
         <div className="brand">
-          <div className="brand-mark" aria-hidden="true">
-            AW
-          </div>
+          <img
+            className="brand-logo"
+            src="/logo.png"
+            alt="Application Workflow Tracker logo"
+          />
           <div>
             <p className="eyebrow">Workflow tracker</p>
             <h1>Application Workflow</h1>
