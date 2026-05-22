@@ -4,5 +4,5 @@ django-ninja==1.6.2
 email-validator==2.2.0
 dj-database-url==2.3.0
 gunicorn==23.0.0
-psycopg[binary]==3.2.6
+psycopg[binary]==3.2.13
 whitenoise==6.9.0
