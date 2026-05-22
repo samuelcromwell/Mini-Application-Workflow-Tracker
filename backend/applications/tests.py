@@ -9,6 +9,18 @@ class HealthCheckTests(TestCase):
     def setUp(self):
         self.client = Client()
 
+    def test_api_root_get_returns_metadata(self):
+        response = self.client.get("/api/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["health"], "/api/health")
+
+    def test_api_root_head_returns_ok_for_monitors(self):
+        response = self.client.head("/api/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content, b"")
+
     def test_health_check_get_returns_ok(self):
         response = self.client.get("/api/health")
 

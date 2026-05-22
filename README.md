@@ -49,7 +49,8 @@ python manage.py runserver
 - Live health check: `https://mini-application-workflow-tracker.onrender.com/api/health`
 
 For uptime monitors, use the live health check URL. It returns `200 OK` for
-both `GET` and `HEAD` requests.
+both `GET` and `HEAD` requests. The API root also supports `HEAD`, but
+`/api/health` is the preferred monitor URL.
 
 ### Run migrations
 
@@ -104,9 +105,9 @@ Create a new Netlify site from this repository and use:
 
 | Setting | Value |
 |---------|-------|
-| Base directory | leave empty |
-| Build command | `npm --prefix frontend run build` |
-| Publish directory | `frontend/dist` |
+| Base directory | `frontend` |
+| Build command | `npm run build` |
+| Publish directory | `dist` |
 
 Set this environment variable in Netlify:
 

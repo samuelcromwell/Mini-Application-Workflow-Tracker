@@ -34,9 +34,31 @@ def health_check(request):
     return JsonResponse({"status": "ok"})
 
 
+def api_root(request):
+    allowed_methods = ["GET", "HEAD", "OPTIONS"]
+    if request.method == "HEAD":
+        return HttpResponse(status=200)
+    if request.method == "OPTIONS":
+        response = HttpResponse(status=204)
+        response["Allow"] = ", ".join(allowed_methods)
+        return response
+    if request.method != "GET":
+        return HttpResponseNotAllowed(allowed_methods)
+    return JsonResponse(
+        {
+            "name": "Application Workflow Tracker API",
+            "docs": "/api/docs",
+            "openapi": "/api/openapi.json",
+            "health": "/api/health",
+            "applications": "/api/applications",
+        }
+    )
+
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/health', health_check, name='health-check'),
     path('api/health/', health_check, name='health-check-slash'),
+    path('api/', api_root, name='api-root'),
     path('api/', api.urls),
 ]
