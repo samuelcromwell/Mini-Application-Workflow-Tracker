@@ -13,7 +13,7 @@ async function request(path, options = {}) {
     });
   } catch (networkError) {
     throw new Error(
-      "Could not reach the API. Make sure the backend is running on port 8000.",
+      "Could not reach the API. Check that the backend is running and VITE_API_BASE_URL is set correctly.",
     );
   }
 

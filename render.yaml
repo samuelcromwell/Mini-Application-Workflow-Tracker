@@ -1,0 +1,32 @@
+# Render Blueprint: https://render.com/docs/blueprint-spec
+# Deploy from repo root via Dashboard → New → Blueprint, or connect GitHub and use this file.
+
+databases:
+  - name: workflow-tracker-db
+    plan: free
+    databaseName: workflow_tracker
+    user: workflow_tracker
+
+services:
+  - type: web
+    name: workflow-tracker-api
+    runtime: python
+    rootDir: backend
+    plan: free
+    buildCommand: chmod +x build.sh && ./build.sh
+    startCommand: gunicorn config.wsgi:application --bind 0.0.0.0:$PORT
+    healthCheckPath: /api/health
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.3"
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "false"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: workflow-tracker-db
+          property: connectionString
+      # Set after Vercel deploy (comma-separated origins, no trailing slash):
+      # - key: CORS_ALLOWED_ORIGINS
+      #   value: https://your-app.vercel.app
