@@ -3,6 +3,8 @@
 Take-home assessment for a small application workflow tracker built with a
 Django Ninja backend API and a React frontend.
 
+Live frontend: `https://mini-application.netlify.app/`
+
 The workflow is:
 `Draft → Submitted → Under Review → Need More Information / Approved / Rejected`
 
@@ -68,15 +70,6 @@ cd backend
 python manage.py test applications
 ```
 
-### Optional: Django admin
-
-```bash
-python manage.py createsuperuser
-python manage.py runserver
-```
-
-Then open `http://127.0.0.1:8000/admin/` to inspect/edit applications.
-
 ## Frontend
 
 In a second terminal, from the repository root:
@@ -90,8 +83,6 @@ npm run dev
 The app runs at `http://localhost:5174/` and talks to the backend on
 `http://127.0.0.1:8000/api`. Override with `VITE_API_BASE_URL` if you need a
 different host. CORS is pre-allowed for ports 5173 and 5174.
-
-- Live frontend: `https://mini-application.netlify.app/`
 
 ### Build for production
 
