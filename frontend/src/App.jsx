@@ -37,6 +37,17 @@ const emptyForm = {
   description: "",
 };
 
+function formFromApplication(application) {
+  if (!application) return emptyForm;
+  return {
+    applicant_name: application.applicant_name,
+    applicant_email: application.applicant_email,
+    company_name: application.company_name,
+    application_type: application.application_type,
+    description: application.description,
+  };
+}
+
 function statusClass(status) {
   return `status-${status.toLowerCase().replaceAll(" ", "-")}`;
 }
@@ -170,8 +181,39 @@ function ToastStack({ toasts, onDismiss }) {
   );
 }
 
-function ApplicationForm({ initial, mode, onClose, onSaved, onError }) {
-  const [form, setForm] = useState(initial || emptyForm);
+function RequestTrail({ application }) {
+  if (!application?.reviewer_comment) return null;
+
+  return (
+    <section className="request-trail" aria-label="Request trail">
+      <h3>Request trail</h3>
+      <div className="trail-item applicant-trail">
+        <div className="trail-meta">
+          <strong>Applicant request</strong>
+          <span>{formatDate(application.submitted_at || application.created_at)}</span>
+        </div>
+        <p>{application.description}</p>
+      </div>
+      <div className="trail-item reviewer-trail">
+        <div className="trail-meta">
+          <strong>Reviewer comment</strong>
+          <span>{formatDate(application.reviewed_at)}</span>
+        </div>
+        <p>{application.reviewer_comment}</p>
+      </div>
+    </section>
+  );
+}
+
+function ApplicationForm({
+  initial,
+  mode,
+  submitAfterSave = false,
+  onClose,
+  onSaved,
+  onError,
+}) {
+  const [form, setForm] = useState(formFromApplication(initial));
   const [saving, setSaving] = useState(false);
 
   function updateField(event) {
@@ -187,7 +229,8 @@ function ApplicationForm({ initial, mode, onClose, onSaved, onError }) {
         mode === "edit"
           ? await updateApplication(initial.id, form)
           : await createApplication(form);
-      onSaved(saved, mode);
+      const finalApplication = submitAfterSave ? await submitApplication(saved.id) : saved;
+      onSaved(finalApplication, submitAfterSave ? "resubmit" : mode);
     } catch (apiError) {
       onError(apiError.message);
     } finally {
@@ -259,15 +302,23 @@ function ApplicationForm({ initial, mode, onClose, onSaved, onError }) {
           Cancel
         </button>
         <button type="submit" className="primary-button" disabled={saving}>
-          {saving ? "Saving…" : mode === "edit" ? "Save changes" : "Create draft"}
+          {saving
+            ? submitAfterSave
+              ? "Resubmitting…"
+              : "Saving…"
+            : submitAfterSave
+              ? "Save and resubmit"
+              : mode === "edit"
+                ? "Save changes"
+                : "Create draft"}
         </button>
       </div>
     </form>
   );
 }
 
-function DecisionForm({ application, onClose, onSaved, onError }) {
-  const [status, setStatus] = useState(STATUSES.APPROVED);
+function DecisionForm({ application, initialStatus = STATUSES.APPROVED, onClose, onSaved, onError }) {
+  const [status, setStatus] = useState(initialStatus);
   const [reviewerComment, setReviewerComment] = useState("");
   const [saving, setSaving] = useState(false);
 
@@ -357,10 +408,9 @@ function ApplicationDetail({
     );
   }
 
-  const canEdit =
-    application.status === STATUSES.DRAFT ||
-    application.status === STATUSES.NEED_MORE_INFORMATION;
-  const canSubmit = canEdit;
+  const canEdit = application.status === STATUSES.DRAFT;
+  const canSubmit = application.status === STATUSES.DRAFT;
+  const canEditAndResubmit = application.status === STATUSES.NEED_MORE_INFORMATION;
   const canStartReview = application.status === STATUSES.SUBMITTED;
   const canDecide = application.status === STATUSES.UNDER_REVIEW;
   const isTerminal =
@@ -436,6 +486,15 @@ function ApplicationDetail({
               Edit
             </button>
           )}
+          {canEditAndResubmit && (
+            <button
+              type="button"
+              className="primary-button"
+              onClick={() => onEdit(application, { submitAfterSave: true })}
+            >
+              Edit and Resubmit
+            </button>
+          )}
           {canSubmit && (
             <button
               type="button"
@@ -443,11 +502,7 @@ function ApplicationDetail({
               disabled={busyAction === "submit"}
               onClick={() => onSubmit(application)}
             >
-              {busyAction === "submit"
-                ? "Submitting…"
-                : application.status === STATUSES.NEED_MORE_INFORMATION
-                  ? "Resubmit"
-                  : "Submit"}
+              {busyAction === "submit" ? "Submitting…" : "Submit"}
             </button>
           )}
           {canStartReview && (
@@ -660,12 +715,12 @@ export default function App() {
     setModal({ kind: "create" });
   }
 
-  function openEdit(application) {
-    setModal({ kind: "edit", application });
+  function openEdit(application, options = {}) {
+    setModal({ kind: "edit", application, submitAfterSave: Boolean(options.submitAfterSave) });
   }
 
-  function openDecision(application) {
-    setModal({ kind: "decision", application });
+  function openDecision(application, initialStatus = STATUSES.APPROVED) {
+    setModal({ kind: "decision", application, initialStatus });
   }
 
   function closeModal() {
@@ -677,7 +732,12 @@ export default function App() {
     closeModal();
     pushToast({
       tone: "success",
-      title: mode === "edit" ? "Changes saved" : "Draft created",
+      title:
+        mode === "resubmit"
+          ? "Application updated and resubmitted"
+          : mode === "edit"
+            ? "Changes saved"
+            : "Draft created",
       message: saved.tracking_number,
     });
   }
@@ -801,7 +861,7 @@ export default function App() {
           onStartReview={(application) =>
             runAction("review", application, startReview, "Review started")
           }
-          onOpenDecision={(application) => openDecision(application)}
+          onOpenDecision={openDecision}
         />
       </main>
 
@@ -820,13 +880,15 @@ export default function App() {
 
       {modal?.kind === "edit" && (
         <Modal
-          title="Edit application"
+          title={modal.submitAfterSave ? "Edit and resubmit" : "Edit application"}
           subtitle={modal.application.tracking_number}
           onClose={closeModal}
         >
+          {modal.submitAfterSave && <RequestTrail application={modal.application} />}
           <ApplicationForm
             mode="edit"
             initial={modal.application}
+            submitAfterSave={modal.submitAfterSave}
             onClose={closeModal}
             onSaved={handleFormSaved}
             onError={(message) =>
@@ -844,6 +906,7 @@ export default function App() {
         >
           <DecisionForm
             application={modal.application}
+            initialStatus={modal.initialStatus}
             onClose={closeModal}
             onSaved={handleDecisionSaved}
             onError={(message) =>
