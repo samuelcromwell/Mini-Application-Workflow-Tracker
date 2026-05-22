@@ -120,3 +120,84 @@ class ApplicationApiTests(TestCase):
         self.assertEqual(resubmit_response.status_code, 200)
         self.assertEqual(application.status, Application.Status.SUBMITTED)
         self.assertEqual(application.description, "Updated with supporting details.")
+
+    def take_to_decision(self, application):
+        self.post_json(f"/api/applications/{application.id}/submit")
+        self.post_json(f"/api/applications/{application.id}/start-review")
+
+    def test_approved_application_cannot_be_edited(self):
+        application = self.create_application()
+        self.take_to_decision(application)
+        self.post_json(
+            f"/api/applications/{application.id}/decision",
+            {"status": Application.Status.APPROVED, "reviewer_comment": "Looks good."},
+        )
+
+        response = self.patch_json(
+            f"/api/applications/{application.id}",
+            {"company_name": "Acme Holdings"},
+        )
+
+        self.assertEqual(response.status_code, 400)
+
+    def test_rejected_application_cannot_be_edited(self):
+        application = self.create_application()
+        self.take_to_decision(application)
+        self.post_json(
+            f"/api/applications/{application.id}/decision",
+            {"status": Application.Status.REJECTED, "reviewer_comment": "Incomplete."},
+        )
+
+        response = self.patch_json(
+            f"/api/applications/{application.id}",
+            {"company_name": "Acme Holdings"},
+        )
+
+        self.assertEqual(response.status_code, 400)
+
+    def test_start_review_rejected_when_not_submitted(self):
+        application = self.create_application()
+
+        response = self.post_json(f"/api/applications/{application.id}/start-review")
+
+        self.assertEqual(response.status_code, 400)
+        application.refresh_from_db()
+        self.assertEqual(application.status, Application.Status.DRAFT)
+
+    def test_decision_rejected_when_not_under_review(self):
+        application = self.create_application()
+        self.post_json(f"/api/applications/{application.id}/submit")
+
+        response = self.post_json(
+            f"/api/applications/{application.id}/decision",
+            {"status": Application.Status.APPROVED, "reviewer_comment": ""},
+        )
+
+        self.assertEqual(response.status_code, 400)
+        application.refresh_from_db()
+        self.assertEqual(application.status, Application.Status.SUBMITTED)
+
+    def test_need_more_information_decision_requires_comment(self):
+        application = self.create_application()
+        self.take_to_decision(application)
+
+        response = self.post_json(
+            f"/api/applications/{application.id}/decision",
+            {"status": Application.Status.NEED_MORE_INFORMATION, "reviewer_comment": "   "},
+        )
+
+        self.assertEqual(response.status_code, 400)
+
+    def test_create_rejects_invalid_application_type(self):
+        payload = {**self.payload, "application_type": "Pizza"}
+
+        response = self.post_json("/api/applications", payload)
+
+        self.assertEqual(response.status_code, 422)
+
+    def test_create_rejects_invalid_email(self):
+        payload = {**self.payload, "applicant_email": "not-an-email"}
+
+        response = self.post_json("/api/applications", payload)
+
+        self.assertEqual(response.status_code, 422)
