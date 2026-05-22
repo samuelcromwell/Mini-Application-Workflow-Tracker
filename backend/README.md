@@ -28,6 +28,11 @@ In the Render web service **Settings** (Root Directory: `backend`):
 
 Or leave **Start Command** empty and Render will use `Procfile`.
 
+If deploy logs show `ModuleNotFoundError: No module named 'your_application'`,
+the Render service is still using the placeholder start command
+`gunicorn your_application.wsgi`. Replace it with the Start Command above and
+redeploy.
+
 Set env vars: `SECRET_KEY`, `DEBUG=false`, `DATABASE_URL` (Postgres), and after Vercel deploy `CORS_ALLOWED_ORIGINS`.
 
 ## Health Check
