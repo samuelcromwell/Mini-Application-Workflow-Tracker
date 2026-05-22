@@ -80,9 +80,9 @@ npm install
 npm run dev
 ```
 
-The app runs at `http://localhost:5173/` and talks to the backend on
+The app runs at `http://localhost:5174/` and talks to the backend on
 `http://127.0.0.1:8000/api`. Override with `VITE_API_BASE_URL` if you need a
-different host.
+different host. CORS is pre-allowed for ports 5173 and 5174.
 
 ### Build for production
 
