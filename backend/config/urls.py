@@ -15,11 +15,28 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
+from django.http import HttpResponse, HttpResponseNotAllowed, JsonResponse
 from django.urls import path
 
 from .api import api
 
+
+def health_check(request):
+    allowed_methods = ["GET", "HEAD", "OPTIONS"]
+    if request.method == "HEAD":
+        return HttpResponse(status=200)
+    if request.method == "OPTIONS":
+        response = HttpResponse(status=204)
+        response["Allow"] = ", ".join(allowed_methods)
+        return response
+    if request.method != "GET":
+        return HttpResponseNotAllowed(allowed_methods)
+    return JsonResponse({"status": "ok"})
+
+
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('api/health', health_check, name='health-check'),
+    path('api/health/', health_check, name='health-check-slash'),
     path('api/', api.urls),
 ]

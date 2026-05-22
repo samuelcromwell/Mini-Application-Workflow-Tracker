@@ -5,6 +5,23 @@ from django.test import Client, TestCase
 from .models import Application
 
 
+class HealthCheckTests(TestCase):
+    def setUp(self):
+        self.client = Client()
+
+    def test_health_check_get_returns_ok(self):
+        response = self.client.get("/api/health")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), {"status": "ok"})
+
+    def test_health_check_head_returns_ok_for_monitors(self):
+        response = self.client.head("/api/health")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content, b"")
+
+
 class ApplicationApiTests(TestCase):
     def setUp(self):
         self.client = Client()

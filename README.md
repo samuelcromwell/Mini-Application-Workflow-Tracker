@@ -46,6 +46,10 @@ python manage.py runserver
 - Interactive API docs (Swagger UI): `http://127.0.0.1:8000/api/docs`
 - Live API docs (Swagger UI): `https://mini-application-workflow-tracker.onrender.com/api/docs`
 - Health check: `http://127.0.0.1:8000/api/health`
+- Live health check: `https://mini-application-workflow-tracker.onrender.com/api/health`
+
+For uptime monitors, use the live health check URL. It returns `200 OK` for
+both `GET` and `HEAD` requests.
 
 ### Run migrations
 
